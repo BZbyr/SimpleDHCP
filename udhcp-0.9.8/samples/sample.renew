@@ -1,0 +1,35 @@
+#!/bin/sh
+# Sample udhcpc bound script
+
+RESOLV_CONF="/etc/resolv.conf"
+NET_CONF="/etc/net.conf"
+
+[ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
+[ -n "$subnet" ] && NETMASK="netmask $subnet"
+
+/sbin/ifconfig $interface $ip $BROADCAST $NETMASK
+echo -n > $NET_CONF
+[ -n "$ip" ] && echo "ip= $ip" >> $NET_CONF
+[-n "$router" ] && echo "router= $router" >> $NET_CONF
+[-n "$subnet" ] && echo "netmask= $subnet" >> $NET_CONF
+
+if [ -n "$router" ]
+then
+	echo "deleting routers"
+	while /sbin/route del default gw 0.0.0.0 dev $interface
+	do :
+	done
+
+	for i in $router
+	do
+		/sbin/route add default gw $i dev $interface
+	done
+fi
+
+echo -n > $RESOLV_CONF
+[ -n "$domain" ] && echo domain $domain >> $RESOLV_CONF
+for i in $dns
+do
+	echo adding dns $i
+	echo nameserver $i >> $RESOLV_CONF
+done
