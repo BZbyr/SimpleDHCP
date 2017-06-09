@@ -13,3 +13,8 @@
 
 #define MAX_SIZE 512 /* Longest string to echo */
 
+int main(int argc, char *argv[]){
+    
+    struct dhcpMessage packet;
+
+}
