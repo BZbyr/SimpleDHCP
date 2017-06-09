@@ -59,7 +59,7 @@ static int signal_pipe[2];
 #define LISTEN_RAW 2
 static int listen_mode;
 
-#define DEFAULT_SCRIPT	"/usr/share/udhcpc/sample.script"
+#define DEFAULT_SCRIPT	"/usr/share/udhcpc/default.script"
 
 struct client_config_t client_config = {
 	/* Default options. */
@@ -132,7 +132,6 @@ static void perform_renew(void)
 		state = INIT_SELECTING;
 		break;
 	case INIT_SELECTING:
-             break;
 	}
 
 	/* start things over */
@@ -226,8 +225,8 @@ int main(int argc, char *argv[])
 		{"foreground",	no_argument,		0, 'f'},
 		{"background",	no_argument,		0, 'b'},
 		{"hostname",	required_argument,	0, 'H'},
-		{"hostname",  required_argument,      0, 'h'},
-		{"interface",required_argument,	0, 'i'},
+		{"hostname",    required_argument,      0, 'h'},
+		{"interface",	required_argument,	0, 'i'},
 		{"now", 	no_argument,		0, 'n'},
 		{"pidfile",	required_argument,	0, 'p'},
 		{"quit",	no_argument,		0, 'q'},
@@ -369,7 +368,6 @@ int main(int argc, char *argv[])
 						background();
 					} else if (client_config.abort_if_no_lease) {
 						LOG(LOG_INFO, "No lease, failing.");
-                                      run_script(NULL,"deconfig");
 						exit_client(1);
 				  	}
 					/* wait to try again */

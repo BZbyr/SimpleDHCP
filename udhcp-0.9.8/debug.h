@@ -30,7 +30,7 @@
 #define CLOSE_LOG() do {;} while(0)
 #endif
 
-# ifdef DEBUG
+#ifdef DEBUG
 # undef DEBUG
 # define DEBUG(level, str, args...) LOG(level, str, ## args)
 # define DEBUGGING

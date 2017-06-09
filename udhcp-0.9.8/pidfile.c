@@ -63,7 +63,7 @@ void pidfile_write_release(int pid_fd)
 
 void pidfile_delete(char *pidfile)
 {
-	if (pidfile) unlink(pidfile);/*É¾³ýpidfile*/
+	if (pidfile) unlink(pidfile);
 }
 
 
