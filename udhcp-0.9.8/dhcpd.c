@@ -19,6 +19,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 整个dhcp server运行的主线，server开始运行是从main函数开始，
+ * 相当于我们程序的main入口。在main将各个功能模块组合起来
+ * 实现我们的dhcp server。
  */
 
 #include <fcntl.h>
