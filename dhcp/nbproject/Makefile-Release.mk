@@ -35,8 +35,10 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/dhcpd.o \
-	${OBJECTDIR}/options.o
+	${OBJECTDIR}/clientpacket.o \
+	${OBJECTDIR}/dhcpc.o \
+	${OBJECTDIR}/options.o \
+	${OBJECTDIR}/packet.o
 
 
 # C Compiler Flags
@@ -63,15 +65,25 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/dhcp: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/dhcp ${OBJECTFILES} ${LDLIBSOPTIONS}
 
-${OBJECTDIR}/dhcpd.o: dhcpd.c
+${OBJECTDIR}/clientpacket.o: clientpacket.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dhcpd.o dhcpd.c
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/clientpacket.o clientpacket.c
+
+${OBJECTDIR}/dhcpc.o: dhcpc.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dhcpc.o dhcpc.c
 
 ${OBJECTDIR}/options.o: options.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/options.o options.c
+
+${OBJECTDIR}/packet.o: packet.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/packet.o packet.c
 
 # Subprojects
 .build-subprojects:
