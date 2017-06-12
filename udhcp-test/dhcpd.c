@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
 			if (sendOffer(&packet) < 0) {
 				LOG(LOG_ERR, "send OFFER failed");
 			}
-			break;			
+			break;
  		case DHCPREQUEST:
 			DEBUG(LOG_INFO, "received REQUEST");
 
