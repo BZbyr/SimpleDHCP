@@ -1,28 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/* 
- * File:   packet.h
- * Author: bzbyr
- *
- * Created on 2017年6月9日, 下午2:31
- */
-
-#ifndef PACKET_H
-#define PACKET_H
+#ifndef _PACKET_H
+#define _PACKET_H
 
 #include <netinet/udp.h>
 #include <netinet/ip.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 struct dhcpMessage {
-	u_int8_t op;            //(1)报文类型, 1表示请求报文, 2表示回应报文
+        u_int8_t op;            //(1)报文类型, 1表示请求报文, 2表示回应报文
 	u_int8_t htype;         //(1)硬件地址类型,1表示10Mb/s的以太网的硬件地址
 	u_int8_t hlen;          //(1)硬件地址长度, 以太网中该值是6
 	u_int8_t hops;          //(1)条数, client端设置为0, 也能被一个代理服务器设置
@@ -40,7 +23,7 @@ struct dhcpMessage {
 	u_int8_t options[308]; 	//格式为"代码+长度+数据"
 };
 
-struct udp_dhcp_packet {
+struct udp_dhcp_packet { //定义来一个UDP包
 	struct iphdr ip;
 	struct udphdr udp;
 	struct dhcpMessage data;
@@ -51,10 +34,8 @@ int get_packet(struct dhcpMessage *packet, int fd);
 u_int16_t checksum(void *addr, int count);
 int raw_packet(struct dhcpMessage *payload, u_int32_t source_ip, int source_port,
 		   u_int32_t dest_ip, int dest_port, unsigned char *dest_arp, int ifindex);
+int kernel_packet(struct dhcpMessage *payload, u_int32_t source_ip, int source_port,
+		   u_int32_t dest_ip, int dest_port);
 
-#ifdef __cplusplus
-}
+
 #endif
-
-#endif /* PACKET_H */
-

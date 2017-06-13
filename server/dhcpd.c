@@ -78,11 +78,8 @@ static void signal_handler(int sig)
 }
 
 
-#ifdef COMBINED_BINARY	
-int udhcpd_main(int argc, char *argv[])
-#else
+
 int main(int argc, char *argv[])
-#endif
 {	
 	fd_set rfds;
 	struct timeval tv;
@@ -100,7 +97,7 @@ int main(int argc, char *argv[])
 	int sig;
 	
 	OPEN_LOG("udhcpd");
-	LOG(LOG_INFO, "udhcp server (v%s) started", VERSION);
+	printf("server started");
 
 	memset(&server_config, 0, sizeof(struct server_config_t));
 	
@@ -126,14 +123,6 @@ int main(int argc, char *argv[])
 			   &server_config.server, server_config.arp) < 0)
 		exit_server(1);
 
-#ifndef DEBUGGING
-	pid_fd = pidfile_acquire(server_config.pidfile); /* hold lock during fork. */
-	if (daemon(0, 0) == -1) {
-		perror("fork");
-		exit_server(1);
-	}
-	pidfile_write_release(pid_fd);
-#endif
 
 
 	socketpair(AF_UNIX, SOCK_STREAM, 0, signal_pipe); //  创建TCP通信，实现双工通信

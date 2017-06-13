@@ -1,18 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+/* dhcpc.h */
+#ifndef _DHCPC_H
+#define _DHCPC_H
 
-/* 
- * File:   dhcpc.h
- * Author: bzbyr
- *
- * Created on 2017年6月12日, 下午4:59
- */
-
-#ifndef DHCPC_H
-#define DHCPC_H
+#include "libbb_udhcp.h"
 
 #define INIT_SELECTING	0
 #define REQUESTING	1
@@ -24,9 +14,6 @@
 #define RELEASED	7
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 struct client_config_t {
 	char foreground;		/* Do not fork */
 	char quit_after_lease;		/* Quit after obtaining lease */
@@ -42,13 +29,6 @@ struct client_config_t {
 };
 
 extern struct client_config_t client_config;
-    
 
 
-
-#ifdef __cplusplus
-}
 #endif
-
-#endif /* DHCPC_H */
-
