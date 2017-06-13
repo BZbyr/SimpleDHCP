@@ -6,15 +6,11 @@
       </df>
       <in>arpping.c</in>
       <in>arpping.h</in>
-      <in>clientpacket.c</in>
-      <in>clientpacket.h</in>
       <in>debug.h</in>
       <in>dhcpd.c</in>
       <in>dhcpd.h</in>
-      <in>dumpleases.c</in>
       <in>files.c</in>
       <in>files.h</in>
-      <in>frontend.c</in>
       <in>leases.c</in>
       <in>leases.h</in>
       <in>libbb_udhcp.h</in>
@@ -24,15 +20,13 @@
       <in>packet.h</in>
       <in>pidfile.c</in>
       <in>pidfile.h</in>
-      <in>script.c</in>
-      <in>script.h</in>
       <in>serverpacket.c</in>
       <in>serverpacket.h</in>
       <in>socket.c</in>
       <in>socket.h</in>
     </df>
   </logicalFolder>
-  <projectmakefile>Makefile</projectmakefile>
+  <projectmakefile></projectmakefile>
   <confs>
     <conf name="Default" type="0">
       <toolsSet>

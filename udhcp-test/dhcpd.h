@@ -16,7 +16,7 @@
 #define LEASE_TIME              (60*60*24*10) /* 10 days of seconds */
 
 /* where to find the DHCP server configuration file */
-#define DHCPD_CONF_FILE         "/sample/udhcpd.conf"
+#define DHCPD_CONF_FILE         "sample/udhcpd.conf"
 
 /*****************************************************************/
 /* Do not modify below here unless you know what you are doing!! */
