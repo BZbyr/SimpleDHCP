@@ -1,0 +1,69 @@
+gcc -c -DSYSLOG -W -Wall -Wstrict-prototypes -DVERSION='"0.9.8"' -Os -fomit-frame-pointer dhcpd.c
+gcc -c -DSYSLOG -W -Wall -Wstrict-prototypes -DVERSION='"0.9.8"' -Os -fomit-frame-pointer arpping.c
+arpping.c: In function ‘arpping’:
+arpping.c:70:2: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+  *((u_int *) arp.sInaddr) = ip;   /* source IP address */
+  ^
+arpping.c:72:2: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+  *((u_int *) arp.tInaddr) = yiaddr;  /* target IP address */
+  ^
+arpping.c:93:8: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+        *((u_int *) arp.sInaddr) == yiaddr) {
+        ^
+gcc -c -DSYSLOG -W -Wall -Wstrict-prototypes -DVERSION='"0.9.8"' -Os -fomit-frame-pointer files.c
+gcc -c -DSYSLOG -W -Wall -Wstrict-prototypes -DVERSION='"0.9.8"' -Os -fomit-frame-pointer leases.c
+gcc -c -DSYSLOG -W -Wall -Wstrict-prototypes -DVERSION='"0.9.8"' -Os -fomit-frame-pointer serverpacket.c
+serverpacket.c: In function ‘add_bootp_options’:
+serverpacket.c:101:11: warning: pointer targets in passing argument 1 of ‘strncpy’ differ in signedness [-Wpointer-sign]
+   strncpy(packet->sname, server_config.sname, sizeof(packet->sname) - 1);
+           ^
+In file included from serverpacket.c:25:0:
+/usr/include/string.h:132:14: note: expected ‘char * __restrict__’ but argument is of type ‘u_int8_t *’
+ extern char *strncpy (char *__restrict __dest,
+              ^
+serverpacket.c:103:11: warning: pointer targets in passing argument 1 of ‘strncpy’ differ in signedness [-Wpointer-sign]
+   strncpy(packet->file, server_config.boot_file, sizeof(packet->file) - 1);
+           ^
+In file included from serverpacket.c:25:0:
+/usr/include/string.h:132:14: note: expected ‘char * __restrict__’ but argument is of type ‘u_int8_t *’
+ extern char *strncpy (char *__restrict __dest,
+              ^
+gcc -c -DSYSLOG -W -Wall -Wstrict-prototypes -DVERSION='"0.9.8"' -Os -fomit-frame-pointer options.c
+gcc -c -DSYSLOG -W -Wall -Wstrict-prototypes -DVERSION='"0.9.8"' -Os -fomit-frame-pointer socket.c
+gcc -c -DSYSLOG -W -Wall -Wstrict-prototypes -DVERSION='"0.9.8"' -Os -fomit-frame-pointer packet.c
+packet.c: In function ‘get_packet’:
+packet.c:73:17: warning: pointer targets in passing argument 1 of ‘strncmp’ differ in signedness [-Wpointer-sign]
+        !strncmp(vendor, broken_vendors[i], vendor[OPT_LEN - 2])) {
+                 ^
+In file included from packet.c:2:0:
+/usr/include/string.h:147:12: note: expected ‘const char *’ but argument is of type ‘unsigned char *’
+ extern int strncmp (const char *__s1, const char *__s2, size_t __n)
+            ^
+gcc -c -DSYSLOG -W -Wall -Wstrict-prototypes -DVERSION='"0.9.8"' -Os -fomit-frame-pointer pidfile.c
+gcc  dhcpd.o arpping.o files.o leases.o serverpacket.o options.o socket.o packet.o pidfile.o -o udhcpd
+gcc -c -DSYSLOG -W -Wall -Wstrict-prototypes -DVERSION='"0.9.8"' -Os -fomit-frame-pointer dhcpc.c
+In file included from dhcpc.c:40:0:
+dhcpc.c: In function ‘perform_renew’:
+dhcpc.h:7:24: error: label at end of compound statement
+ #define INIT_SELECTING 0
+                        ^
+dhcpc.c:134:7: note: in expansion of macro ‘INIT_SELECTING’
+  case INIT_SELECTING:
+       ^
+dhcpc.c: In function ‘main’:
+dhcpc.c:254:12: warning: pointer targets in passing argument 1 of ‘strncpy’ differ in signedness [-Wpointer-sign]
+    strncpy(client_config.clientid + OPT_DATA, optarg, len);
+            ^
+In file included from dhcpc.c:34:0:
+/usr/include/string.h:132:14: note: expected ‘char * __restrict__’ but argument is of type ‘unsigned char *’
+ extern char *strncpy (char *__restrict __dest,
+              ^
+dhcpc.c:269:12: warning: pointer targets in passing argument 1 of ‘strncpy’ differ in signedness [-Wpointer-sign]
+    strncpy(client_config.hostname + 2, optarg, len);
+            ^
+In file included from dhcpc.c:34:0:
+/usr/include/string.h:132:14: note: expected ‘char * __restrict__’ but argument is of type ‘unsigned char *’
+ extern char *strncpy (char *__restrict __dest,
+              ^
+Makefile:71: recipe for target 'dhcpc.o' failed
+make: *** [dhcpc.o] Error 1
