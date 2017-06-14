@@ -21,6 +21,7 @@ enum { //枚举类型
 #define OPTION_REQ	0x10 /* have the client request this option */
 #define OPTION_LIST	0x20 /* There can be a list of 1 or more of these */
 
+/*这个辅助数组的做法与read_config里的有些类似，name即是keyword，flag可以求出Length，code即Code*/
 struct dhcp_option {
 	char name[10];
 	char flags;

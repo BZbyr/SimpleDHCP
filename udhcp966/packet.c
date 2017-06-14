@@ -115,7 +115,7 @@ u_int16_t checksum(void *addr, int count)
 }
 
 
-/* 构建一个UDP包 Constuct a ip/udp header for a packet, and specify the source and dest hardware address */
+/* 构建一个UDP包 并发送Constuct a ip/udp header for a packet, and specify the source and dest hardware address */
 int raw_packet(struct dhcpMessage *payload, u_int32_t source_ip, int source_port,
 		   u_int32_t dest_ip, int dest_port, unsigned char *dest_arp, int ifindex)
 {

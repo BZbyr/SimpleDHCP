@@ -50,14 +50,14 @@ static int max_option_length[] = {
 	[OPTION_S32] =		sizeof("-2147483684 "),
 };
 
-
+/*转化为shell脚本参数格式所占字节大小的上限。*/
 static int upper_length(int length, struct dhcp_option *option)
 {
 	return max_option_length[option->flags & TYPE_MASK] *
 	       (length / option_lengths[option->flags & TYPE_MASK]);
 }
 
-
+/*设置成10进制的ip格式*/
 static int sprintip(char *dest, char *pre, unsigned char *ip) {
 	return sprintf(dest, "%s%d.%d.%d.%d ", pre, ip[0], ip[1], ip[2], ip[3]);
 }
@@ -71,7 +71,7 @@ static void fill_options(char *dest, unsigned char *option, struct dhcp_option *
 	int16_t val_s16;
 	u_int32_t val_u32;
 	int32_t val_s32;
-	int len = option[OPT_LEN - 2];
+	int len = option[OPT_LEN - 2];//报文中该option的长度
 
 	dest += sprintf(dest, "%s=", type_p->name);
 
@@ -135,7 +135,9 @@ static char *find_env(const char *prefix, char *defaultstr)
 }
 
 
-/* put all the paramaters into an environment */
+/* put all the paramaters into an environment
+ * 按指定的格式填充环境变量
+ */
 static char **fill_envp(struct dhcpMessage *packet)
 {
 	int num_options = 0;
@@ -148,45 +150,55 @@ static char **fill_envp(struct dhcpMessage *packet)
 		num_options = 0;
 	else {
 		for (i = 0; options[i].code; i++)
-			if (get_option(packet, options[i].code))
-				num_options++;
-		if (packet->siaddr) num_options++;
+                    if (get_option(packet, options[i].code))
+                            num_options++;
+                
+		if (packet->siaddr) 
+                    num_options++;
+                
 		if ((temp = get_option(packet, DHCP_OPTION_OVER)))
-			over = *temp;
-		if (!(over & FILE_FIELD) && packet->file[0]) num_options++;
-		if (!(over & SNAME_FIELD) && packet->sname[0]) num_options++;		
+                    over = *temp;
+                
+		if (!(over & FILE_FIELD) && packet->file[0]) 
+                    num_options++;
+                
+		if (!(over & SNAME_FIELD) && packet->sname[0]) 
+                    num_options++;		
 	}
 	
 	envp = xmalloc((num_options + 5) * sizeof(char *));
 	envp[0] = xmalloc(sizeof("interface=") + strlen(client_config.interface));
 	sprintf(envp[0], "interface=%s", client_config.interface);
 	envp[1] = find_env("PATH", "PATH=/bin:/usr/bin:/sbin:/usr/sbin");
-	envp[2] = find_env("HOME", "HOME=/");
+	envp[2] = find_env("HOME", "HOME=/");//读取本地环境变量  
 
 	if (packet == NULL) {
 		envp[3] = NULL;
 		return envp;
 	}
 
-	envp[3] = xmalloc(sizeof("ip=255.255.255.255"));
+	envp[3] = xmalloc(sizeof("ip=255.255.255.255"));//按最大的点分十进制格式申请空间 
 	sprintip(envp[3], "ip=", (unsigned char *) &packet->yiaddr);
-	for (i = 0, j = 4; options[i].code; i++) {
-		if ((temp = get_option(packet, options[i].code))) {
-			envp[j] = xmalloc(upper_length(temp[OPT_LEN - 2], &options[i]) + strlen(options[i].name) + 2);
-			fill_options(envp[j], temp, &options[i]);
-			j++;
-		}
+	for (i = 0, j = 4; options[i].code; i++) {//读取
+            if ((temp = get_option(packet, options[i].code))) { //;//Found，返回option信息的首地址
+                    envp[j] = xmalloc(upper_length(temp[OPT_LEN - 2], &options[i]) + strlen(options[i].name) + 2);
+                    fill_options(envp[j], temp, &options[i]);
+                    j++;
+            }
 	}
+        
 	if (packet->siaddr) {
-		envp[j] = xmalloc(sizeof("siaddr=255.255.255.255"));
-		sprintip(envp[j++], "siaddr=", (unsigned char *) &packet->siaddr);
+            envp[j] = xmalloc(sizeof("siaddr=255.255.255.255"));
+            sprintip(envp[j++], "siaddr=", (unsigned char *) &packet->siaddr);
 	}
+        
 	if (!(over & FILE_FIELD) && packet->file[0]) {
 		/* watch out for invalid packets */
 		packet->file[sizeof(packet->file) - 1] = '\0';
 		envp[j] = xmalloc(sizeof("boot_file=") + strlen(packet->file));
 		sprintf(envp[j++], "boot_file=%s", packet->file);
 	}
+        
 	if (!(over & SNAME_FIELD) && packet->sname[0]) {
 		/* watch out for invalid packets */
 		packet->sname[sizeof(packet->sname) - 1] = '\0';
@@ -213,12 +225,14 @@ void run_script(struct dhcpMessage *packet, const char *name)
 		waitpid(pid, NULL, 0);
 		return;
 	} else if (pid == 0) {
-		envp = fill_envp(packet);
+                /*按指定的格式填充环境变量*/
+		envp = fill_envp(packet);////从数据报文和主机中获取相关信息 
 		
 		/* close fd's? */
 		
 		/* exec script */
 		DEBUG(LOG_INFO, "execle'ing %s", client_config.script);
+                /*函数在执行时envp所存环境变量能够被shell script所直接使用。*/
 		execle(client_config.script, client_config.script,
 		       name, NULL, envp);
 		LOG(LOG_ERR, "script %s failed: %s",

@@ -10,16 +10,24 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/clientpacket.h</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/files.c</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/samples/simple.script</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/samples/sample.renew</file>
             <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/script.h</file>
-            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/pidfile.c</file>
             <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/dhcpd.c</file>
             <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/dhcpc.c</file>
-            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/arpping.c</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/options.h</file>
             <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/dhcpc.h</file>
-            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/clientpacket.c</file>
             <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/script.c</file>
             <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/dhcpd.h</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/samples/sample.deconfig</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/clientpacket.c</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/packet.c</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/pidfile.c</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/options.c</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/arpping.c</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/socket.c</file>
+            <file>file:/home/bzbyr/code/SimpleDHCP/udhcp966/packet.h</file>
         </group>
     </open-files>
 </project-private>

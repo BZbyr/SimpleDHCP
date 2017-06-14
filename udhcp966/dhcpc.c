@@ -59,7 +59,7 @@ static int signal_pipe[2];
 #define LISTEN_RAW 2
 static int listen_mode;
 
-#define DEFAULT_SCRIPT	"/usr/share/udhcpc/default.script"
+#define DEFAULT_SCRIPT	"sample/simple.script"
 
 struct client_config_t client_config = {
 	/* Default options. */
@@ -312,7 +312,12 @@ int main(int argc, char *argv[])
 		client_config.clientid = xmalloc(6 + 3);
 		client_config.clientid[OPT_CODE] = DHCP_CLIENT_ID;
 		client_config.clientid[OPT_LEN] = 7;
-		client_config.clientid[OPT_DATA] = 1;
+		client_config.clientid[OPT_DATA] = 1;// rfc
+                /*   Code   Len  Type  Client-Identifier
+                 *  +-----+-----+-----+-----+-----+-----
+                 *  |  61 |  n  | t1  | i1  | i2  | ...
+                 *  +-----+-----+-----+-----+-----+-----
+                 */
 		memcpy(client_config.clientid + 3, client_config.arp, 6);
 	}
 
@@ -353,100 +358,105 @@ int main(int argc, char *argv[])
 
 		now = time(0);
 		if (retval == 0) {
-			/* timeout dropped to zero */
+			/* timeout dropped to zero 则表示在定时期限内，
+                         * 没有收到socket和signal信号，
+                         * 则根据DHCP协议中对客户端行为的定义，依据状态执行操作。
+                         */
 			switch (state) {
-			case INIT_SELECTING:
-				if (packet_num < 3) {
-					if (packet_num == 0)
-						xid = random_xid();
+                            case INIT_SELECTING:
+                                    if (packet_num < 3) {
+                                            if (packet_num == 0)
+                                                    xid = random_xid();
 
-					/* send discover packet */
-					send_discover(xid, requested_ip); /* broadcast */
-					
-					timeout = now + ((packet_num == 2) ? 4 : 2);
-					packet_num++;
-				} else {
-					if (client_config.background_if_no_lease) {
-						LOG(LOG_INFO, "No lease, forking to background.");
-						background();
-					} else if (client_config.abort_if_no_lease) {
-						LOG(LOG_INFO, "No lease, failing.");
-						exit_client(1);
-				  	}
-					/* wait to try again */
-					packet_num = 0;
-					timeout = now + 60;
-				}
-				break;
-			case RENEW_REQUESTED:
-			case REQUESTING:
-				if (packet_num < 3) {
-					/* send request packet */
-					if (state == RENEW_REQUESTED)
-						send_renew(xid, server_addr, requested_ip); /* unicast */
-					else send_selecting(xid, server_addr, requested_ip); /* broadcast */
-					
-					timeout = now + ((packet_num == 2) ? 10 : 2);
-					packet_num++;
-				} else {
-					/* timed out, go back to init state */
-					if (state == RENEW_REQUESTED) run_script(NULL, "deconfig");
-					state = INIT_SELECTING;
-					timeout = now;
-					packet_num = 0;
-					change_mode(LISTEN_RAW);
-				}
-				break;
-			case BOUND:
-				/* Lease is starting to run out, time to enter renewing state */
-				state = RENEWING;
-				change_mode(LISTEN_KERNEL);
-				DEBUG(LOG_INFO, "Entering renew state");
-				/* fall right through */
-			case RENEWING:
-				/* Either set a new T1, or enter REBINDING state */
-				if ((t2 - t1) <= (lease / 14400 + 1)) {
-					/* timed out, enter rebinding state */
-					state = REBINDING;
-					timeout = now + (t2 - t1);
-					DEBUG(LOG_INFO, "Entering rebinding state");
-				} else {
-					/* send a request packet */
-					send_renew(xid, server_addr, requested_ip); /* unicast */
-					
-					t1 = (t2 - t1) / 2 + t1;
-					timeout = t1 + start;
-				}
-				break;
-			case REBINDING:
-				/* Either set a new T2, or enter INIT state */
-				if ((lease - t2) <= (lease / 14400 + 1)) {
-					/* timed out, enter init state */
-					state = INIT_SELECTING;
-					LOG(LOG_INFO, "Lease lost, entering init state");
-					run_script(NULL, "deconfig");
-					timeout = now;
-					packet_num = 0;
-					change_mode(LISTEN_RAW);
-				} else {
-					/* send a request packet */
-					send_renew(xid, 0, requested_ip); /* broadcast */
+                                            /* send discover packet */
+                                            send_discover(xid, requested_ip); /* broadcast */
 
-					t2 = (lease - t2) / 2 + t2;
-					timeout = t2 + start;
-				}
-				break;
-			case RELEASED:
-				/* yah, I know, *you* say it would never happen */
-				timeout = 0x7fffffff;
-				break;
+                                            timeout = now + ((packet_num == 2) ? 4 : 2);
+                                            packet_num++;
+                                    } else {
+                                            if (client_config.background_if_no_lease) {
+                                                    LOG(LOG_INFO, "No lease, forking to background.");
+                                                    background();
+                                            } else if (client_config.abort_if_no_lease) {
+                                                    LOG(LOG_INFO, "No lease, failing.");
+                                                    exit_client(1);
+                                            }
+                                            /* wait to try again */
+                                            packet_num = 0;
+                                            timeout = now + 60;
+                                    }
+                                    break;
+                            case RENEW_REQUESTED:
+                            case REQUESTING:
+                                    if (packet_num < 3) {
+                                            /* send request packet */
+                                            if (state == RENEW_REQUESTED)
+                                                    send_renew(xid, server_addr, requested_ip); /* unicast */
+                                            else send_selecting(xid, server_addr, requested_ip);/* Broadcasts a DHCP request message */
+
+                                            timeout = now + ((packet_num == 2) ? 10 : 2);
+                                            packet_num++;
+                                    } else {
+                                            /* timed out, go back to init state */
+                                            if (state == RENEW_REQUESTED) run_script(NULL, "deconfig");
+                                            state = INIT_SELECTING;
+                                            timeout = now;
+                                            packet_num = 0;
+                                            change_mode(LISTEN_RAW);
+                                    }
+                                    break;
+                            case BOUND:
+                                    /* Lease is starting to run out, time to enter renewing state */
+                                    state = RENEWING;
+                                    change_mode(LISTEN_KERNEL);
+                                    DEBUG(LOG_INFO, "Entering renew state");
+                                    /* fall right through */
+                            case RENEWING:
+                                    /* Either set a new T1, or enter REBINDING state */
+                                    if ((t2 - t1) <= (lease / 14400 + 1)) {
+                                            /* timed out, enter rebinding state */
+                                            state = REBINDING;
+                                            timeout = now + (t2 - t1);
+                                            DEBUG(LOG_INFO, "Entering rebinding state");
+                                    } else {
+                                            /* send a request packet */
+                                            send_renew(xid, server_addr, requested_ip); /* unicast */
+
+                                            t1 = (t2 - t1) / 2 + t1;
+                                            timeout = t1 + start;
+                                    }
+                                    break;
+                            case REBINDING:
+                                    /* Either set a new T2, or enter INIT state */
+                                    if ((lease - t2) <= (lease / 14400 + 1)) {
+                                            /* timed out, enter init state */
+                                            state = INIT_SELECTING;
+                                            LOG(LOG_INFO, "Lease lost, entering init state");
+                                            run_script(NULL, "deconfig");
+                                            timeout = now;
+                                            packet_num = 0;
+                                            change_mode(LISTEN_RAW);
+                                    } else {
+                                            /* send a request packet */
+                                            send_renew(xid, 0, requested_ip); /* broadcast */
+
+                                            t2 = (lease - t2) / 2 + t2;
+                                            timeout = t2 + start;
+                                    }
+                                    break;
+                            case RELEASED:
+                                    /* yah, I know, *you* say it would never happen */
+                                    timeout = 0x7fffffff;
+                                    break;
 			}
 		} else if (retval > 0 && listen_mode != LISTEN_NONE && FD_ISSET(fd, &rfds)) {
-			/* a packet is ready, read it */
-			
+			/* a packet is ready, read it
+                         * 则表示在定时期限内，socket监听端口收到packet。
+                         */
+		
 			if (listen_mode == LISTEN_KERNEL)
 				len = get_packet(&packet, fd);
-			else len = get_raw_packet(&packet, fd);
+			else len = get_raw_packet(&packet, fd);// 得检查是不是发给自己的
 			
 			if (len == -1 && errno != EINTR) {
 				DEBUG(LOG_INFO, "error on read, %s, reopening socket", strerror(errno));
@@ -469,18 +479,18 @@ int main(int argc, char *argv[])
 			case INIT_SELECTING:
 				/* Must be a DHCPOFFER to one of our xid's */
 				if (*message == DHCPOFFER) {
-					if ((temp = get_option(&packet, DHCP_SERVER_ID))) {
-						memcpy(&server_addr, temp, 4);
-						xid = packet.xid;
-						requested_ip = packet.yiaddr;
-						
-						/* enter requesting state */
-						state = REQUESTING;
-						timeout = now;
-						packet_num = 0;
-					} else {
-						DEBUG(LOG_ERR, "No server ID in message");
-					}
+                                    if ((temp = get_option(&packet, DHCP_SERVER_ID))) {
+                                            memcpy(&server_addr, temp, 4);
+                                            xid = packet.xid;
+                                            requested_ip = packet.yiaddr;
+
+                                            /* enter requesting state */
+                                            state = REQUESTING;
+                                            timeout = now;
+                                            packet_num = 0;
+                                    } else {
+                                            DEBUG(LOG_ERR, "No server ID in message");
+                                    }
 				}
 				break;
 			case RENEW_REQUESTED:
@@ -534,6 +544,12 @@ int main(int argc, char *argv[])
 			/* case BOUND, RELEASED: - ignore all packets */
 			}	
 		} else if (retval > 0 && FD_ISSET(signal_pipe[0], &rfds)) {
+                    /*则表示在定时期限内，收到signal信号量。
+                     * 该signal可能是其他进程或管理员发送的，
+                     * 用于管理DHCP客户端，或者控制其状态。
+                     * SIGUSR1对应控制客户端进入RENEW状态，
+                     * SIGUSR2控制客户端执行发送release报文，
+                     * SIGTERM控制客户端退出*/
 			if (read(signal_pipe[0], &sig, sizeof(signal)) < 0) {
 				DEBUG(LOG_ERR, "Could not read signal: %s", 
 					strerror(errno));

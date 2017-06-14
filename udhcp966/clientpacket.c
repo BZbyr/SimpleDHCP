@@ -187,6 +187,7 @@ int get_raw_packet(struct dhcpMessage *payload, int fd)
 	u_int16_t check;
 
 	memset(&packet, 0, sizeof(struct udp_dhcp_packet));
+        /*把信息读到packet中，并且返回实际读到的字节数*/
 	bytes = read(fd, &packet, sizeof(struct udp_dhcp_packet));
 	if (bytes < 0) {
 		DEBUG(LOG_INFO, "couldn't read on raw listening socket -- ignoring");
@@ -205,7 +206,7 @@ int get_raw_packet(struct dhcpMessage *payload, int fd)
 	}
 	
 	/* ignore any extra garbage bytes */
-	bytes = ntohs(packet.ip.tot_len);
+	bytes = ntohs(packet.ip.tot_len);//个IP数据报的长度转化为主机字节序长度
 	
 	/* Make sure its the right packet for us, and that it passes sanity checks */
 	if (packet.ip.protocol != IPPROTO_UDP || packet.ip.version != IPVERSION ||

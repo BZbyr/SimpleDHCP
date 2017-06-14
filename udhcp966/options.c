@@ -43,7 +43,7 @@ struct dhcp_option options[] = {
 	{"message",	OPTION_STRING,				0x38},
 	{"tftp",	OPTION_STRING,				0x42},
 	{"bootfile",	OPTION_STRING,				0x43},
-	{"",		0x00,				0x00}
+	{"",		0x00,				0x00}//最后一行使用来终止的
 };
 
 /* Lengths of the different option types */
