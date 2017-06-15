@@ -203,7 +203,7 @@ static char **fill_envp(struct dhcpMessage *packet)
 		/* watch out for invalid packets */
 		packet->sname[sizeof(packet->sname) - 1] = '\0';
 		envp[j] = xmalloc(sizeof("sname=") + strlen(packet->sname));
-		sprintf(envp[j++], "sname=%s", packet->sname);
+		snprintf(envp[j++], "sname=%.*s",strlen(packet->sname) ,packet->sname);
 	}	
 	envp[j] = NULL;
 	return envp;
@@ -238,5 +238,5 @@ void run_script(struct dhcpMessage *packet, const char *name)
 		LOG(LOG_ERR, "script %s failed: %s",
 		    client_config.script, strerror(errno));
 		exit(1);
-	}			
+	}	
 }

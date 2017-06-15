@@ -59,7 +59,7 @@ static int signal_pipe[2];
 #define LISTEN_RAW 2
 static int listen_mode;
 
-#define DEFAULT_SCRIPT	"sample/simple.script"
+#define DEFAULT_SCRIPT	"samples/simple.script"
 
 struct client_config_t client_config = {
 	/* Default options. */
@@ -70,7 +70,7 @@ struct client_config_t client_config = {
 	interface: "eth0",
 	pidfile: NULL,
 	script: DEFAULT_SCRIPT,
-	clientid: NULL,
+	clientid: "2014212966",
 	hostname: NULL,
 	ifindex: 0,
 	arp: "\0\0\0\0\0\0",		/* appease gcc-3.0 */
@@ -94,7 +94,6 @@ static void show_usage(void)
 "  -q, --quit                      Quit after obtaining lease\n"
 "  -r, --request=IP                IP address to request (default: none)\n"
 "  -s, --script=file               Run file at dhcp events (default:\n"
-"                                  " DEFAULT_SCRIPT ")\n"
 "  -v, --version                   Display version\n"
 	);
 	exit(0);
@@ -193,7 +192,8 @@ static void background(void)
 	int pid_fd;
 
 	pid_fd = pidfile_acquire(client_config.pidfile); /* hold lock during fork. */
-	while (pid_fd >= 0 && pid_fd < 3) pid_fd = dup(pid_fd); /* don't let daemon close it */
+	while (pid_fd >= 0 && pid_fd < 3) 
+                pid_fd = dup(pid_fd); /* don't let daemon close it */
 	if (daemon(0, 0) == -1) {
 		perror("fork");
 		exit_client(1);
@@ -237,6 +237,7 @@ int main(int argc, char *argv[])
 		{"script",	required_argument,	0, 's'},
 		{"version",	no_argument,		0, 'v'},
 		{"help",	no_argument,		0, '?'},
+                {"help",	no_argument,		0, '?'},
 		{0, 0, 0, 0}
 	};
 
@@ -250,7 +251,7 @@ int main(int argc, char *argv[])
 		case 'c':
 			len = strlen(optarg) > 255 ? 255 : strlen(optarg);
 			if (client_config.clientid) free(client_config.clientid);
-			client_config.clientid = xmalloc(len + 2);
+                                client_config.clientid = xmalloc(len + 2);
 			client_config.clientid[OPT_CODE] = DHCP_CLIENT_ID;
 			client_config.clientid[OPT_LEN] = len;
 			client_config.clientid[OPT_DATA] = '\0';
@@ -290,7 +291,7 @@ int main(int argc, char *argv[])
 			client_config.script = optarg;
 			break;
 		case 'v':
-			printf("udhcpcd, version %s\n\n", VERSION);
+			printf("DHCPclient forked from udhcp, \n\n");
 			exit_client(0);
 			break;
 		default:
@@ -399,7 +400,7 @@ int main(int argc, char *argv[])
                                     } else {
                                             /* timed out, go back to init state */
                                             if (state == RENEW_REQUESTED) run_script(NULL, "deconfig");
-                                            state = INIT_SELECTING;
+                                                    state = INIT_SELECTING;
                                             timeout = now;
                                             packet_num = 0;
                                             change_mode(LISTEN_RAW);
@@ -476,72 +477,72 @@ int main(int argc, char *argv[])
 			}
 			
 			switch (state) {
-			case INIT_SELECTING:
-				/* Must be a DHCPOFFER to one of our xid's */
-				if (*message == DHCPOFFER) {
-                                    if ((temp = get_option(&packet, DHCP_SERVER_ID))) {
-                                            memcpy(&server_addr, temp, 4);
-                                            xid = packet.xid;
-                                            requested_ip = packet.yiaddr;
+                            case INIT_SELECTING:
+                                    /* Must be a DHCPOFFER to one of our xid's */
+                                    if (*message == DHCPOFFER) {
+                                        if ((temp = get_option(&packet, DHCP_SERVER_ID))) {
+                                                memcpy(&server_addr, temp, 4);
+                                                xid = packet.xid;
+                                                requested_ip = packet.yiaddr;
 
-                                            /* enter requesting state */
-                                            state = REQUESTING;
-                                            timeout = now;
-                                            packet_num = 0;
-                                    } else {
-                                            DEBUG(LOG_ERR, "No server ID in message");
+                                                /* enter requesting state */
+                                                state = REQUESTING;
+                                                timeout = now;
+                                                packet_num = 0;
+                                        } else {
+                                                DEBUG(LOG_ERR, "No server ID in message");
+                                        }
                                     }
-				}
-				break;
-			case RENEW_REQUESTED:
-			case REQUESTING:
-			case RENEWING:
-			case REBINDING:
-				if (*message == DHCPACK) {
-					if (!(temp = get_option(&packet, DHCP_LEASE_TIME))) {
-						LOG(LOG_ERR, "No lease time with ACK, using 1 hour lease");
-						lease = 60 * 60;
-					} else {
-						memcpy(&lease, temp, 4);
-						lease = ntohl(lease);
-					}
-						
-					/* enter bound state */
-					t1 = lease / 2;
-					
-					/* little fixed point for n * .875 */
-					t2 = (lease * 0x7) >> 3;
-					temp_addr.s_addr = packet.yiaddr;
-					LOG(LOG_INFO, "Lease of %s obtained, lease time %ld", 
-						inet_ntoa(temp_addr), lease);
-					start = now;
-					timeout = t1 + start;
-					requested_ip = packet.yiaddr;
-					run_script(&packet,
-						   ((state == RENEWING || state == REBINDING) ? "renew" : "bound"));
+                                    break;
+                            case RENEW_REQUESTED:
+                            case REQUESTING:
+                            case RENEWING:
+                            case REBINDING:
+                                    if (*message == DHCPACK) {
+                                            if (!(temp = get_option(&packet, DHCP_LEASE_TIME))) {
+                                                    LOG(LOG_ERR, "No lease time with ACK, using 1 hour lease");
+                                                    lease = 60 * 60;
+                                            } else {
+                                                    memcpy(&lease, temp, 4);
+                                                    lease = ntohl(lease);
+                                            }
 
-					state = BOUND;
-					change_mode(LISTEN_NONE);
-					if (client_config.quit_after_lease) 
-						exit_client(0);
-					if (!client_config.foreground)
-						background();
+                                            /* enter bound state */
+                                            t1 = lease / 2;
 
-				} else if (*message == DHCPNAK) {
-					/* return to init state */
-					LOG(LOG_INFO, "Received DHCP NAK");
-					run_script(&packet, "nak");
-					if (state != REQUESTING)
-						run_script(NULL, "deconfig");
-					state = INIT_SELECTING;
-					timeout = now;
-					requested_ip = 0;
-					packet_num = 0;
-					change_mode(LISTEN_RAW);
-					sleep(3); /* avoid excessive network traffic */
-				}
-				break;
-			/* case BOUND, RELEASED: - ignore all packets */
+                                            /* little fixed point for n * .875 */
+                                            t2 = (lease * 0x7) >> 3;
+                                            temp_addr.s_addr = packet.yiaddr;
+                                            LOG(LOG_INFO, "Lease of %s obtained, lease time %ld", 
+                                                    inet_ntoa(temp_addr), lease);
+                                            start = now;
+                                            timeout = t1 + start;
+                                            requested_ip = packet.yiaddr;
+                                            run_script(&packet,
+                                                       ((state == RENEWING || state == REBINDING) ? "renew" : "bound"));
+
+                                            state = BOUND;
+                                            change_mode(LISTEN_NONE);
+                                            if (client_config.quit_after_lease) 
+                                                    exit_client(0);
+                                            if (!client_config.foreground)
+                                                    background();
+
+                                    } else if (*message == DHCPNAK) {
+                                            /* return to init state */
+                                            LOG(LOG_INFO, "Received DHCP NAK");
+                                            run_script(&packet, "nak");
+                                            if (state != REQUESTING)
+                                                    run_script(NULL, "deconfig");
+                                            state = INIT_SELECTING;
+                                            timeout = now;
+                                            requested_ip = 0;
+                                            packet_num = 0;
+                                            change_mode(LISTEN_RAW);
+                                            sleep(3); /* avoid excessive network traffic */
+                                    }
+                                    break;
+                            /* case BOUND, RELEASED: - ignore all packets */
 			}	
 		} else if (retval > 0 && FD_ISSET(signal_pipe[0], &rfds)) {
                     /*则表示在定时期限内，收到signal信号量。

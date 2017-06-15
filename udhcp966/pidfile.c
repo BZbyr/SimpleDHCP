@@ -29,6 +29,7 @@
 
 #include "debug.h"
 
+//通过pidfile得到pid
 int pidfile_acquire(char *pidfile)
 {
 	int pid_fd;

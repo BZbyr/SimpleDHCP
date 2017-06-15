@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	FILE *fp;
 	int i, c, mode = REMAINING;
 	long expires;
-	char file[255] = "/var/lib/misc/udhcpd.leases";
+	char file[255] = "samples/udhcpd.leases";
 	struct lease_t lease;
 	struct in_addr addr;
 	

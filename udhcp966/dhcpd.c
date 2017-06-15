@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 #endif
 
 
-	socketpair(AF_UNIX, SOCK_STREAM, 0, signal_pipe); //  创建TCP通信，实现双工通信
+	socketpair(AF_UNIX, SOCK_STREAM, 0, signal_pipe); //  创建TCP通信，实现双工通信, 软中断
 	signal(SIGUSR1, signal_handler);
 	signal(SIGTERM, signal_handler);
 
@@ -177,7 +177,10 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		
-                /* 若signal_pipe接收到可读signal（signal_handler将signal写入signal_pipe[1],根据socketpair的特性，此时signal_pipe[0]将可读，产生一个可读的信号） */
+                /* 若signal_pipe接收到可读signal（signal_handler将signal写入signal_pipe[1],
+                 * 根据socketpair的特性，此时signal_pipe[0]将可读，
+                 * 产生一个可读的信号） 
+                 */
                 //就是 一个读 一个写
 		if (FD_ISSET(signal_pipe[0], &rfds)) {
 			if (read(signal_pipe[0], &sig, sizeof(sig)) < 0)

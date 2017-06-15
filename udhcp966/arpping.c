@@ -72,7 +72,7 @@ int arpping(u_int32_t yiaddr, u_int32_t ip, unsigned char *mac, char *interface)
 	*((u_int *) arp.tInaddr) = yiaddr;		/* target IP address */
 	
 	memset(&addr, 0, sizeof(addr));
-	strcpy(addr.sa_data, interface);
+        strcpy(addr.sa_data, interface);
 	if (sendto(s, &arp, sizeof(arp), 0, &addr, sizeof(addr)) < 0)
 		rv = 0;
 	

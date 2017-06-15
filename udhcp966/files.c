@@ -153,7 +153,7 @@ static struct config_keyword keywords[] = {
 	/* keyword[14]	handler   variable address		default[20] */
 	{"start",	read_ip,  &(server_config.start),	"192.168.0.20"},
 	{"end",		read_ip,  &(server_config.end),		"192.168.0.254"},
-	{"interface",	read_str, &(server_config.interface),	"eth0"},
+	{"interface",	read_str, &(server_config.interface),	"ens33"},
 	{"option",	read_opt, &(server_config.options),	""},
 	{"opt",		read_opt, &(server_config.options),	""},
 	{"max_leases",	read_u32, &(server_config.max_leases),	"254"},
@@ -163,8 +163,8 @@ static struct config_keyword keywords[] = {
 	{"conflict_time",read_u32,&(server_config.conflict_time),"3600"},
 	{"offer_time",	read_u32, &(server_config.offer_time),	"60"},
 	{"min_lease",	read_u32, &(server_config.min_lease),	"60"},
-	{"lease_file",	read_str, &(server_config.lease_file),	"/var/lib/misc/udhcpd.leases"}, //文件里应该是每个ip的租约，继续上一个进程的
-	{"pidfile",	read_str, &(server_config.pidfile),	"/var/run/udhcpd.pid"},// 一个系统只能运行一个DHCP 找pid  防止冲突
+	{"lease_file",	read_str, &(server_config.lease_file),	"samples/udhcpd.leases"}, //文件里应该是每个ip的租约，继续上一个进程的
+	{"pidfile",	read_str, &(server_config.pidfile),	"samples/udhcpd.pid"},// 一个系统只能运行一个DHCP 找pid  防止冲突
 	{"notify_file", read_str, &(server_config.notify_file),	""},
 	{"siaddr",	read_ip,  &(server_config.siaddr),	"0.0.0.0"},
 	{"sname",	read_str, &(server_config.sname),	""},
@@ -229,8 +229,8 @@ void write_leases(void)
 	char buf[255];
 	time_t curr = time(0);
 	unsigned long lease_time;
-	
-	if (!(fp = fopen(server_config.lease_file, "w"))) {
+	fp = fopen(server_config.lease_file, "w");
+	if (NULL==fp) {
 		LOG(LOG_ERR, "Unable to open %s for writing", server_config.lease_file);
 		return;
 	}
@@ -250,10 +250,11 @@ void write_leases(void)
 	}
 	fclose(fp);
 	
-	if (server_config.notify_file) {
-		sprintf(buf, "%s %s", server_config.notify_file, server_config.lease_file);
-		system(buf);
-	}
+	/*if (server_config.notify_file) {
+	*	sprintf(buf, "%s %s", server_config.notify_file, server_config.lease_file);
+	*	system(buf);
+	*}
+        */
 }
 
 
@@ -262,8 +263,8 @@ void read_leases(char *file)
 	FILE *fp;
 	unsigned int i = 0;
 	struct dhcpOfferedAddr lease;
-	
-	if (!(fp = fopen(file, "r"))) {
+	fp = fopen(file, "r");
+	if (NULL==fp) {
 		LOG(LOG_ERR, "Unable to open %s for reading", file);
 		return;
 	}
